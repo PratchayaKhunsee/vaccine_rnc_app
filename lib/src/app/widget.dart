@@ -1,7 +1,7 @@
 import 'dart:io' show Platform;
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:unicorndial/unicorndial.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 
 // [[ In-file Used Only Section ]]
 
@@ -316,17 +316,17 @@ class ButtonWithMenuContext extends WidgetContext {
           },
         );
       default:
-        List<UnicornButton> ch =
-            this.items.map<UnicornButton>((MenuItemContext e) {
+        List<SpeedDialChild> ch =
+            this.items.map<SpeedDialChild>((MenuItemContext e) {
           // e._hostWidget = this;
-          return e.build(
-            context,
-            platform: platform,
-            hostWidget: this,
+          return SpeedDialChild(
+            label: e.message,
+            child: e.icon,
+            onTap: e.onPress,
           );
         }).toList();
-        return UnicornDialer(
-          childButtons: ch,
+        return SpeedDial(
+          children: ch,
         );
     }
   }
@@ -358,16 +358,7 @@ class MenuItemContext extends WidgetContext {
           child: Text('$msg'),
         );
       default:
-        if (hostWidget is ButtonWithMenuContext) {
-          return UnicornButton(
-            labelText: msg,
-            hasLabel: true,
-            currentButton: FloatingActionButton(
-              child: c,
-              onPressed: pressed,
-            ),
-          );
-        }
+        if (hostWidget is ButtonWithMenuContext) {}
         return ListTile(
           onTap: pressed,
           title: Text('$msg'),

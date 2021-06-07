@@ -4,11 +4,12 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:provider/provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
-import 'package:unicorndial/unicorndial.dart';
+// import 'package:unicorndial/unicorndial.dart';
 
 import '../../src/helper/change_notifier.dart';
 import '../../src/layout/generic.dart';
@@ -806,10 +807,11 @@ class Certificate extends StatelessWidget {
         (pw.Widget child) {
       return pw.Container(
         decoration: pw.BoxDecoration(
-          border: pw.BoxBorder(
-            bottom: true,
-            color: PdfColor(0, 0, 0),
-            style: pw.BorderStyle.dotted,
+          border: pw.Border(
+            bottom: pw.BorderSide(
+              color: PdfColor(0, 0, 0),
+              style: pw.BorderStyle.dotted,
+            ),
           ),
         ),
         child: child,
@@ -996,11 +998,23 @@ class Certificate extends StatelessWidget {
                                         maxHeight: 32,
                                       ),
                                       child: pw.Image(
-                                        PdfImage.file(
-                                          pdf.document,
-                                          bytes: signature,
+                                        pw.MemoryImage(
+                                          signature,
                                         ),
                                       ),
+                                      // child:
+                                      // pw.Image.provider(
+                                      //   pw.RawImage(
+                                      //     width: 100,
+                                      //     height: 100,
+                                      //     bytes: signature,
+                                      //   ),
+
+                                      //   // PdfImage.file(
+                                      //   //   pdf.document,
+                                      //   //   bytes: signature,
+                                      //   // ),
+                                      // ),
                                     ),
                                   ),
                                 ],
@@ -1099,10 +1113,14 @@ class Certificate extends StatelessWidget {
 
                             Uint8List buffer = base64.decode(encoded);
 
-                            PdfImage pdfImage = PdfImage.file(
-                              pdf.document,
-                              bytes: buffer,
+                            pw.ImageProvider pdfImage = pw.MemoryImage(
+                              buffer,
                             );
+                            // PdfImage.file(
+                            //   pdf.document,
+                            //   bytes: buffer,
+                            // );
+
                             stackChildren.add(
                               pw.Image(pdfImage),
                             );
@@ -1179,10 +1197,11 @@ class Certificate extends StatelessWidget {
 
                             Uint8List buffer = base64.decode(encoded);
 
-                            PdfImage image = PdfImage.file(
-                              pdf.document,
-                              bytes: buffer,
-                            );
+                            pw.ImageProvider image = pw.MemoryImage(buffer);
+                            // PdfImage.file(
+                            //   pdf.document,
+                            //   bytes: buffer,
+                            // );
 
                             return pw.Image(image);
                           }
@@ -1203,7 +1222,7 @@ class Certificate extends StatelessWidget {
             return pw.Container(
               alignment: pw.Alignment.bottomLeft,
               child: pw.Table(
-                border: pw.TableBorder(
+                border: pw.TableBorder.all(
                   color: PdfColor(0, 0, 0),
                   width: 1,
                 ),
@@ -1231,7 +1250,7 @@ class Certificate extends StatelessWidget {
                   ),
                 ),
                 pw.Table(
-                  border: pw.TableBorder(
+                  border: pw.TableBorder.all(
                     color: PdfColor(0, 0, 0),
                     width: 1,
                   ),
@@ -1249,7 +1268,7 @@ class Certificate extends StatelessWidget {
             return pw.Container(
               alignment: pw.Alignment.bottomLeft,
               child: pw.Table(
-                border: pw.TableBorder(
+                border: pw.TableBorder.all(
                   color: PdfColor(0, 0, 0),
                   width: 1,
                 ),
@@ -1286,7 +1305,7 @@ class Certificate extends StatelessWidget {
                 pw.Expanded(
                   flex: 0,
                   child: pw.Table(
-                    border: pw.TableBorder(
+                    border: pw.TableBorder.all(
                       color: PdfColor(0, 0, 0),
                       width: 1,
                     ),
@@ -1750,118 +1769,220 @@ class Certificate extends StatelessWidget {
         child: Consumer2<_CertNetworkStateNotifier, _CertDataNotifier>(
           builder: (context, network, notifier, child) {
             // debugPrint('${network.requesting}');
-            if (network.requesting ||
-                (network.requested && notifier.certList.length == 0)) {
+            // debugPrint(
+            //     '${network.requesting || (network.requested && notifier.certList.length == 0)}');
+            if (network.requesting) {
               return Container();
             }
 
-            return UnicornDialer(
-              orientation: UnicornOrientation.VERTICAL,
-              parentButton: Icon(Icons.add),
-              childButtons: <UnicornButton>[
-                UnicornButton(
-                  hasLabel: true,
-                  labelText: 'เพิ่มรายการวัคซีนรับรอง',
-                  currentButton: FloatingActionButton(
-                    heroTag: 'add_certification',
-                    backgroundColor: Colors.green,
-                    child: Icon(
-                      Icons.my_library_books,
-                    ),
-                    mini: true,
-                    onPressed: () async {
-                      String against = await _showAvailableVaccination(
-                        context: context,
+            return SpeedDial(
+              orientation: SpeedDialOrientation.Up,
+              icon: Icons.menu,
+              activeIcon: Icons.add,
+              backgroundColor: Colors.blue,
+              iconTheme: IconThemeData(color: Colors.white),
+              children: [
+                SpeedDialChild(
+                  label: 'เพิ่มรายการวัคซีนรับรอง',
+                  backgroundColor: Colors.green,
+                  child: Icon(
+                    Icons.my_library_books,
+                    color: Colors.white,
+                  ),
+                  onTap: () async {
+                    String against = await _showAvailableVaccination(
+                      context: context,
+                    );
+                    if (against != null && notifier.selectedPatient != null) {
+                      network.update(
+                        requesting: true,
+                        requested: false,
                       );
-                      if (against != null && notifier.selectedPatient != null) {
-                        network.update(
-                          requesting: true,
-                          requested: false,
+
+                      global.VaccineDatabaseSource.createCertification(
+                        against: against,
+                        patientId: notifier.selectedPatient['id'],
+                      ).then((value) {
+                        // debugPrint('$value');
+                        List<Map<String, dynamic>> list =
+                            List<Map<String, dynamic>>.from(
+                          notifier.certList,
+                        );
+                        list.add(value);
+                        // debugPrint('$list');
+
+                        notifier.update(
+                          certList: list,
                         );
 
-                        global.VaccineDatabaseSource.createCertification(
-                          against: against,
+                        network.update(
+                          requesting: false,
+                          requested: true,
+                        );
+                      });
+                    }
+                  },
+                ),
+                SpeedDialChild(
+                  label: 'แก้ไขข้อมูลส่วนบนใบรับรอง',
+                  backgroundColor: Colors.amber,
+                  child: Icon(
+                    Icons.edit,
+                    color: Colors.white,
+                  ),
+                  onTap: () {
+                    _showCertificateHeaderPanel(
+                      patientId: notifier.selectedPatient['id'],
+                      context: context,
+                    );
+                  },
+                ),
+                SpeedDialChild(
+                  label: 'ออกใบรับรองเป็นไฟล์ PDF',
+                  backgroundColor: Colors.red,
+                  child: Icon(
+                    Icons.insert_drive_file,
+                    color: Colors.white,
+                  ),
+                  onTap: () async {
+                    List<Map<String, dynamic>> list = [];
+                    Map<String, dynamic> header = {};
+                    bool success = false;
+
+                    await showModalBottomSheet(
+                      context: context,
+                      builder: (context) {
+                        global.VaccineDatabaseSource.getFullCertification(
                           patientId: notifier.selectedPatient['id'],
                         ).then((value) {
-                          // debugPrint('$value');
-                          List<Map<String, dynamic>> list =
-                              List<Map<String, dynamic>>.from(
-                            notifier.certList,
-                          );
-                          list.add(value);
-                          // debugPrint('$list');
-
-                          notifier.update(
-                            certList: list,
-                          );
-
-                          network.update(
-                            requesting: false,
-                            requested: true,
-                          );
+                          list.addAll(value['list']);
+                          header.addAll(value['header']);
+                          success = true;
+                        }).whenComplete(() {
+                          Navigator.of(context).pop();
                         });
-                      }
-                    },
-                  ),
-                ),
-                UnicornButton(
-                  hasLabel: true,
-                  labelText: 'แก้ไขข้อมูลส่วนบนใบรับรอง',
-                  currentButton: FloatingActionButton(
-                    heroTag: 'edit_cert_header',
-                    backgroundColor: Colors.amber,
-                    child: Icon(Icons.edit),
-                    mini: true,
-                    onPressed: () {
-                      _showCertificateHeaderPanel(
-                        patientId: notifier.selectedPatient['id'],
-                        context: context,
-                      );
-                    },
-                  ),
-                ),
-                UnicornButton(
-                  hasLabel: true,
-                  labelText: 'ออกใบรับรองเป็นไฟล์ PDF',
-                  currentButton: FloatingActionButton(
-                    heroTag: 'create_pdf',
-                    backgroundColor: Colors.red,
-                    child: Icon(
-                      Icons.insert_drive_file,
-                    ),
-                    mini: true,
-                    onPressed: () async {
-                      List<Map<String, dynamic>> list = [];
-                      Map<String, dynamic> header = {};
-                      bool success = false;
 
-                      await showModalBottomSheet(
-                        context: context,
-                        builder: (context) {
-                          global.VaccineDatabaseSource.getFullCertification(
-                            patientId: notifier.selectedPatient['id'],
-                          ).then((value) {
-                            list.addAll(value['list']);
-                            header.addAll(value['header']);
-                            success = true;
-                          }).whenComplete(() {
-                            Navigator.of(context).pop();
-                          });
+                        return Container(
+                          child: Center(
+                            child: global.LoadingIcon.large(),
+                          ),
+                        );
+                      },
+                    );
 
-                          return Container(
-                            child: Center(
-                              child: global.LoadingIcon.large(),
-                            ),
-                          );
-                        },
-                      );
-
-                      if (success) _viewAsPDF(header, list);
-                    },
-                  ),
+                    if (success) _viewAsPDF(header, list);
+                  },
                 ),
               ],
             );
+
+            // return UnicornDialer(
+            //   orientation: UnicornOrientation.VERTICAL,
+            //   parentButton: Icon(Icons.add),
+            //   childButtons: <UnicornButton>[
+            //     UnicornButton(
+            //       hasLabel: true,
+            //       labelText: 'เพิ่มรายการวัคซีนรับรอง',
+            //       currentButton: FloatingActionButton(
+            //         heroTag: 'add_certification',
+            //         backgroundColor: Colors.green,
+            //         child: Icon(
+            //           Icons.my_library_books,
+            //         ),
+            //         mini: true,
+            //         onPressed: () async {
+            //           String against = await _showAvailableVaccination(
+            //             context: context,
+            //           );
+            //           if (against != null && notifier.selectedPatient != null) {
+            //             network.update(
+            //               requesting: true,
+            //               requested: false,
+            //             );
+
+            //             global.VaccineDatabaseSource.createCertification(
+            //               against: against,
+            //               patientId: notifier.selectedPatient['id'],
+            //             ).then((value) {
+            //               // debugPrint('$value');
+            //               List<Map<String, dynamic>> list =
+            //                   List<Map<String, dynamic>>.from(
+            //                 notifier.certList,
+            //               );
+            //               list.add(value);
+            //               // debugPrint('$list');
+
+            //               notifier.update(
+            //                 certList: list,
+            //               );
+
+            //               network.update(
+            //                 requesting: false,
+            //                 requested: true,
+            //               );
+            //             });
+            //           }
+            //         },
+            //       ),
+            //     ),
+            //     UnicornButton(
+            //       hasLabel: true,
+            //       labelText: 'แก้ไขข้อมูลส่วนบนใบรับรอง',
+            //       currentButton: FloatingActionButton(
+            //         heroTag: 'edit_cert_header',
+            //         backgroundColor: Colors.amber,
+            //         child: Icon(Icons.edit),
+            //         mini: true,
+            //         onPressed: () {
+            //           _showCertificateHeaderPanel(
+            //             patientId: notifier.selectedPatient['id'],
+            //             context: context,
+            //           );
+            //         },
+            //       ),
+            //     ),
+            //     UnicornButton(
+            //       hasLabel: true,
+            //       labelText: 'ออกใบรับรองเป็นไฟล์ PDF',
+            //       currentButton: FloatingActionButton(
+            //         heroTag: 'create_pdf',
+            //         backgroundColor: Colors.red,
+            //         child: Icon(
+            //           Icons.insert_drive_file,
+            //         ),
+            //         mini: true,
+            //         onPressed: () async {
+            //           List<Map<String, dynamic>> list = [];
+            //           Map<String, dynamic> header = {};
+            //           bool success = false;
+
+            //           await showModalBottomSheet(
+            //             context: context,
+            //             builder: (context) {
+            //               global.VaccineDatabaseSource.getFullCertification(
+            //                 patientId: notifier.selectedPatient['id'],
+            //               ).then((value) {
+            //                 list.addAll(value['list']);
+            //                 header.addAll(value['header']);
+            //                 success = true;
+            //               }).whenComplete(() {
+            //                 Navigator.of(context).pop();
+            //               });
+
+            //               return Container(
+            //                 child: Center(
+            //                   child: global.LoadingIcon.large(),
+            //                 ),
+            //               );
+            //             },
+            //           );
+
+            //           if (success) _viewAsPDF(header, list);
+            //         },
+            //       ),
+            //     ),
+            //   ],
+            // );
           },
         ),
       ),

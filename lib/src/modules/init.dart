@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:http/http.dart' as Http;
 import '../../global.dart' as global;
 
@@ -13,7 +15,7 @@ Future<bool> _authenticate() async {
   if (token == null) return false;
 
   Http.Response res = await Http.post(
-    '${global.url}/login',
+    global.VaccineDatabaseSource.uri('/login'),
     headers: {
       'Authorization': token,
     },
@@ -21,6 +23,34 @@ Future<bool> _authenticate() async {
 
   Map body = json.decode(res.body);
   return body['verified'] as bool;
+}
+
+Future<bool> _checkConnectivity(BuildContext context) async {
+  var connectivityResult = await Connectivity().checkConnectivity();
+  if (connectivityResult == ConnectivityResult.none) {
+    // Display dialog "no internet"
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) => AlertDialog(
+        title: Text('ไม่มีการเชื่อมต่ออินเทอร์เน็ต'),
+        content: Text(
+            'แอปพลิเคชันนี้ต้องการการเชื่อมต่ออินเทอร์เน็ต กรุณาทำการเชื่อมต่ออินเทอร์เน็ตแล้วลองใหม่อีกครั้ง'),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            child: Text('ปิดแอปพลิเคชัน'),
+          ),
+        ],
+      ),
+    );
+
+    SystemNavigator.pop();
+    return false;
+  }
+
+  return true;
 }
 
 /// The first page of the app.
@@ -34,10 +64,17 @@ class Init extends StatelessWidget {
     MediaQueryData mediaQuery = MediaQuery.of(context);
     global.StatusBar.height = mediaQuery.padding.top;
 
-    _authenticate().then((value) async {
-      global.Temp.directory = await getTemporaryDirectory();
-      Navigator.pushNamedAndRemoveUntil(
-          context, value ? '/home' : '/login', (route) => false);
+    _checkConnectivity(context).then((connected) async {
+      if (connected) {
+        _authenticate().then((value) async {
+          global.Temp.directory = await getTemporaryDirectory();
+          Navigator.pushNamedAndRemoveUntil(
+            context,
+            value ? '/home' : '/login',
+            (route) => false,
+          );
+        });
+      }
     });
 
     return Container(

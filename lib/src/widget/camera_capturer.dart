@@ -107,7 +107,7 @@ class _State extends State<CameraCapturer> {
               onPressed: () async {
                 timestamp = DateTime.now();
                 // debugPrint('$path/$tempFilePath');
-                await controller.takePicture('$path/$tempFilePath');
+                await controller.takePicture();
 
                 setState(() {
                   file = File('$path/$tempFilePath');

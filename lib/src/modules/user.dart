@@ -9,12 +9,14 @@ import '../../global.dart' as global;
 
 Future<bool> _editUserInfo(Map<String, dynamic> userInfo) async {
   String jwt = await global.Authorization.get();
-  Http.Response res = await Http.patch(global.url + '/user',
-      headers: {
-        'Authorization': jwt,
-        'Content-Type': 'application/json',
-      },
-      body: json.encode(userInfo));
+  Http.Response res = await Http.post(
+    global.VaccineDatabaseSource.uri('/user/account/edit'),
+    headers: {
+      'Authorization': jwt,
+      'Content-Type': 'application/json',
+    },
+    body: json.encode(userInfo),
+  );
 
   if (res.statusCode != 200) {
     throw res.statusCode;
@@ -41,13 +43,13 @@ class _UserInfoSectionState extends State<_UserInfoSection> {
     'old_values': {
       'firstname': '',
       'lastname': '',
-      'id_number': '',
+      // 'id_number': '',
       'name_prefix': 0,
       'gender': 0,
     },
     'firstname': '',
     'lastname': '',
-    'id_number': '',
+    // 'id_number': '',
     'name_prefix': 0,
     'gender': 0,
   };
@@ -119,7 +121,7 @@ class _UserInfoSectionState extends State<_UserInfoSection> {
                   this._data['old_values'] = {
                     'firstname': this._data['firstname'],
                     'lastname': this._data['lastname'],
-                    'id_number': this._data['id_number'],
+                    // 'id_number': this._data['id_number'],
                     'name_prefix': this._data['name_prefix'],
                     'gender': this._data['gender'],
                   };
@@ -145,13 +147,11 @@ class _UserInfoSectionState extends State<_UserInfoSection> {
                 });
 
                 global.VaccineDatabaseSource.updateUserInfo({
-                  'person': {
-                    'firstname': this._data['firstname'],
-                    'lastname': this._data['lastname'],
-                    'id_number': this._data['id_number'],
-                    'name_prefix': this._data['name_prefix'],
-                    'gender': this._data['gender'],
-                  },
+                  'firstname': this._data['firstname'],
+                  'lastname': this._data['lastname'],
+                  // 'id_number': this._data['id_number'],
+                  'name_prefix': this._data['name_prefix'],
+                  'gender': this._data['gender'],
                 }).then((value) {
                   this.setState(() {
                     this._data['disabled'] = true;
@@ -255,14 +255,14 @@ class _UserInfoSectionState extends State<_UserInfoSection> {
             this._data['lastname'] = value;
           },
         ),
-        Input(
-          placeholder: 'เลขประจำตัวประชาชน',
-          disabled: true,
-          value: this._data['id_number'],
-          onChanged: (value) {
-            this._data['id_number'] = value;
-          },
-        ),
+        // Input(
+        //   placeholder: 'เลขประจำตัวประชาชน',
+        //   disabled: true,
+        //   value: this._data['id_number'],
+        //   onChanged: (value) {
+        //     this._data['id_number'] = value;
+        //   },
+        // ),
         [
           {
             'widget': Text('เพศ'),
@@ -368,10 +368,8 @@ class _UserAccountSectionState extends State<_UserAccountSection> {
                 });
 
                 _editUserInfo({
-                  'password': {
-                    'old': this._data['password_section']['old'],
-                    'new': this._data['password_section']['new'],
-                  },
+                  'old': this._data['password_section']['old'],
+                  'new': this._data['password_section']['new'],
                 }).then((value) {
                   this.setState(() {
                     this._data['password_section']['disabled'] = true;

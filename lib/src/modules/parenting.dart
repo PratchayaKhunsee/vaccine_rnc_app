@@ -258,8 +258,10 @@ class _State extends State<_Widget> {
                         textAlign: TextAlign.center,
                       ),
                       TextButton(
-                        child: Text('สามารถสร้างรายชื่อได้ที่นี้'),
-                        onPressed: () {},
+                        child: Text('สามารถสร้างรายชื่อได้ที่นี่'),
+                        onPressed: () {
+                          _showPatientCreator(context);
+                        },
                       )
                     ],
                   ),

@@ -8,7 +8,7 @@ import '../../global.dart' as global;
 class _SignUpState extends State<_SignUpStateful> {
   Future<Http.Response> signUp() {
     return Http.post(
-      global.url + '/signup',
+      global.VaccineDatabaseSource.uri('/signup'),
       body: json.encode(this.widget.baseWidget.data.toMap()),
       headers: {
         'Content-Type': 'application/json',
@@ -105,14 +105,14 @@ class _SignUpState extends State<_SignUpStateful> {
                   Padding(
                     padding: EdgeInsets.all(5),
                   ),
-                  TextFormField(
-                    decoration: InputDecoration(
-                      hintText: 'เลขประจำตัวประชาชน',
-                    ),
-                    onChanged: (value) {
-                      this.data.idNumber = value;
-                    },
-                  ),
+                  // TextFormField(
+                  //   decoration: InputDecoration(
+                  //     hintText: 'เลขประจำตัวประชาชน',
+                  //   ),
+                  //   onChanged: (value) {
+                  //     this.data.idNumber = value;
+                  //   },
+                  // ),
                   Padding(
                     padding: EdgeInsets.all(5),
                   ),
@@ -210,17 +210,16 @@ class SignUpData extends Data {
   String lastName = '';
   String username = '';
   String password = '';
-  String idNumber = '';
   int gender = 0;
   int namePrefix = 0;
 
   Map toMap() {
     return {
-      'firstName': this.firstName,
-      'lastName': this.lastName,
-      'idNumber': this.idNumber,
+      'firstname': this.firstName,
+      'lastname': this.lastName,
+      // 'idNumber': this.idNumber,
       'gender': this.gender,
-      'namePrefix': this.namePrefix,
+      'name_prefix': this.namePrefix,
       'username': this.username,
       'password': this.password
     };

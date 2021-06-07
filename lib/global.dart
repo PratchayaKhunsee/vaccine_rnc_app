@@ -6,12 +6,24 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:camera/camera.dart';
 import 'package:http/http.dart' as Http;
+// import 'package:flutter/services.dart' show rootBundle;
 
-set url(String str) {
-  VaccineDatabaseSource.url = str;
+/// The application key for communication.
+// class AppKey {
+//   static String _key;
+//   static Future<String> get() async {
+//     if (_key == null) {
+//       _key = await rootBundle.loadString('assets/app.key');
+//     }
+//     return _key;
+//   }
+// }
+
+set host(String str) {
+  VaccineDatabaseSource.host = str;
 }
 
-String get url => VaccineDatabaseSource.url;
+String get host => VaccineDatabaseSource.host;
 
 class Authorization {
   static Future<bool> put(String encoded) async {
@@ -34,12 +46,17 @@ class Authorization {
 }
 
 class VaccineDatabaseSource {
-  static String url = 'https://vaccine-database.herokuapp.com';
+  static String host = 'https://vaccine-vnc-database.herokuapp.com';
+  static Uri uri(String path) => Uri(
+        host: 'vaccine-database.herokuapp.com',
+        path: path,
+        scheme: 'https',
+      );
 
   /// Get user information.
   static Future<Map<String, dynamic>> getUserInfo() async {
     Http.Response res = await Http.get(
-      url + '/user',
+      uri('/user/view'),
       headers: {
         'Authorization': await Authorization.get(),
       },
@@ -57,7 +74,7 @@ class VaccineDatabaseSource {
   static Future<Map<String, dynamic>> updateUserInfo(
       Map<String, dynamic> userInfo) async {
     Http.Response res = await Http.post(
-      url + '/user',
+      uri('/user/info/edit'),
       headers: {
         'Authorization': await Authorization.get(),
         'Content-Type': 'application/json',
@@ -76,7 +93,7 @@ class VaccineDatabaseSource {
   /// Get all available patient for user.
   static Future<List<Map<String, dynamic>>> getAvailablePatient() async {
     Http.Response res = await Http.get(
-      url + '/records/available/patient',
+      uri('/patient/view'),
       headers: {
         'Authorization': await Authorization.get(),
       },
@@ -100,7 +117,7 @@ class VaccineDatabaseSource {
     @required String lastname,
   }) async {
     var res = await Http.post(
-      url + '/patient/create/self',
+      uri('/patient/create/self'),
       headers: {
         'Authorization': await Authorization.get(),
         'Content-Type': 'application/json',
@@ -125,7 +142,7 @@ class VaccineDatabaseSource {
     @required int patientID,
   }) async {
     var res = await Http.post(
-      url + '/record/view',
+      uri('/record/view'),
       headers: {
         'Authorization': await Authorization.get(),
         'Content-Type': 'application/json',
@@ -148,7 +165,7 @@ class VaccineDatabaseSource {
     @required int patientID,
   }) async {
     var res = await Http.post(
-      url + '/record/create',
+      uri('/record/create'),
       headers: {
         'Authorization': await Authorization.get(),
         'Content-Type': 'application/json',
@@ -170,7 +187,7 @@ class VaccineDatabaseSource {
   static Future<Map<String, dynamic>> updateRecord(
       Map<String, dynamic> map) async {
     var res = await Http.post(
-      url + '/record/edit',
+      uri('/record/edit'),
       headers: {
         'Authorization': await Authorization.get(),
         'Content-Type': 'application/json',
@@ -193,7 +210,7 @@ class VaccineDatabaseSource {
     // @required int personId,
   }) async {
     var res = await Http.post(
-      url + '/patient/create',
+      uri('/patient/create'),
       headers: {
         'Authorization': await Authorization.get(),
         'Content-Type': 'application/json',
@@ -219,7 +236,7 @@ class VaccineDatabaseSource {
     @required String lastname,
   }) async {
     var res = await Http.post(
-      url + '/patient/edit',
+      uri('/patient/edit'),
       headers: {
         'Authorization': await Authorization.get(),
         'Content-Type': 'application/json',
@@ -241,7 +258,7 @@ class VaccineDatabaseSource {
 
   static Future<bool> removePatient(int patientId) async {
     var res = await Http.post(
-      url + '/patient/remove',
+      uri('/patient/remove'),
       headers: {
         'Authorization': await Authorization.get(),
         'Content-Type': 'application/json',
@@ -264,7 +281,7 @@ class VaccineDatabaseSource {
     int patientId,
   ) async {
     var res = await Http.post(
-      url + '/certificate/view',
+      uri('/certificate/view'),
       headers: {
         'Authorization': await Authorization.get(),
         'Content-Type': 'application/json',
@@ -292,7 +309,7 @@ class VaccineDatabaseSource {
     int patientId,
   ) async {
     var res = await Http.post(
-      url + '/certificate/list',
+      uri('/certificate/list'),
       headers: {
         'Authorization': await Authorization.get(),
         'Content-Type': 'application/json',
@@ -302,11 +319,17 @@ class VaccineDatabaseSource {
       }),
     );
 
+    switch (res.statusCode) {
+      case 204:
+        return <Map<String, dynamic>>[];
+      case 200:
+        break;
+      case 400:
+        throw json.decode(res.body);
+    }
+
     var body = json.decode(res.body);
 
-    if (res.statusCode != 200) {
-      throw body;
-    }
     List<Map<String, dynamic>> list = [];
     if (body is List) {
       body.forEach((element) {
@@ -321,7 +344,7 @@ class VaccineDatabaseSource {
     @required String against,
   }) async {
     var res = await Http.post(
-      url + '/certificate/create',
+      uri('/certificate/create'),
       headers: {
         'Authorization': await Authorization.get(),
         'Content-Type': 'application/json',
@@ -343,7 +366,7 @@ class VaccineDatabaseSource {
     int patientId,
   ) async {
     var res = await Http.post(
-      url + '/certificate/available',
+      uri('/certificate/available'),
       headers: {
         'Authorization': await Authorization.get(),
         'Content-Type': 'application/json',
@@ -373,7 +396,7 @@ class VaccineDatabaseSource {
   static Future<Map<String, dynamic>> viewCertificate(
       int certificateId, int patientId) async {
     var res = await Http.post(
-      url + '/certificate/view',
+      uri('/certificate/view'),
       headers: {
         'Authorization': await Authorization.get(),
         'Content-Type': 'application/json',
@@ -397,7 +420,7 @@ class VaccineDatabaseSource {
     Map<String, dynamic> updatedCert,
   ) async {
     var res = await Http.post(
-      url + '/certificate/edit',
+      uri('/certificate/edit'),
       headers: {
         'Authorization': await Authorization.get(),
         'Content-Type': 'application/json',
@@ -418,7 +441,7 @@ class VaccineDatabaseSource {
     int patientId,
   }) async {
     var res = await Http.post(
-      url + '/certificate/list/full',
+      uri('/certificate/list/full'),
       headers: {
         'Authorization': await Authorization.get(),
         'Content-Type': 'application/json',
@@ -457,7 +480,7 @@ class VaccineDatabaseSource {
     int patientId,
   ) async {
     var res = await Http.post(
-      url + '/certificate/view/header',
+      uri('/certificate/view/header'),
       headers: {
         'Authorization': await Authorization.get(),
         'Content-Type': 'application/json',
@@ -484,7 +507,7 @@ class VaccineDatabaseSource {
     // debugPrint('$requestBody');
 
     var res = await Http.post(
-      url + '/certificate/edit/header',
+      uri('/certificate/edit/header'),
       headers: {
         'Authorization': await Authorization.get(),
         'Content-Type': 'application/json',

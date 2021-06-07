@@ -8,7 +8,7 @@ import '_base.dart';
 
 Future<Http.Response> logIn(String username, String password) {
   return Http.post(
-    global.url + '/login',
+    global.VaccineDatabaseSource.uri('/login'),
     body: json.encode(
       {
         'username': username,
@@ -88,6 +88,7 @@ class _LoginFormSectionState extends State<_LoginFormSection> {
 
               var res =
                   await logIn(this._data['username'], this._data['password']);
+
               switch (res.statusCode) {
                 case 200:
                   Map<String, dynamic> body = json.decode(res.body);

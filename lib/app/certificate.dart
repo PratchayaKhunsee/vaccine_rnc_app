@@ -639,7 +639,8 @@ class _CertificateBody extends StatelessWidget {
 
     Uint8List pdfBytes = await pdf.save();
     if (kIsWeb) {
-      printBlob(pdfBytes, 'application/pdf');
+      printBlob(pdfBytes, 'application/pdf',
+          'certificate_of_vaccination_' + DateTime.now().toString());
     } else {
       await Printing.layoutPdf(
         name: 'certificate_of_vaccination_' + DateTime.now().toString(),

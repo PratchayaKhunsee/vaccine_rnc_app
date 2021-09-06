@@ -1,56 +1,64 @@
 @JS()
-library JS;
+library js;
 
 import 'dart:typed_data';
 
 import 'package:js/js.dart';
 import 'package:js/js_util.dart';
 
-@JS('Blob')
-class Blob {
-  external Blob(array, [options]);
+@JS()
+external dynamic window;
+
+createArray([List? member]) {
+  return callConstructor(getProperty(window, 'Array'), member ?? []);
+}
+
+addAllToArray(array, List? added) {
+  if (!instanceof(array, getProperty(window, 'Array'))) return;
+  return callMethod(array, 'push', added ?? []);
+}
+
+createArrayFrom(arrayLike) {
+  return callMethod(getProperty(window, 'Array'), 'from',
+      arrayLike != null ? [arrayLike] : []);
+}
+
+createUint8ArrayFrom(arrayLike) {
+  return callMethod(getProperty(window, 'Uint8Array'), 'from', [arrayLike]);
+}
+
+createBlob(array, [options]) {
+  var args = [array];
+  if (options != null) args.add(options);
+  return callConstructor(getProperty(window, 'Blob'), args);
 }
 
 @JS('URL')
 class URL {
-  external static String createObjectURL(data);
+  external static String createObjectURL(obj);
 }
-
-@JS('Array')
-class Array {
-  external static bool isArray(value);
-  external static Array from(arrayLike);
-  external int get length;
-}
-
-@JS('Uint8Array')
-class Uint8Array {
-  external Uint8Array(length);
-  external static Uint8Array from(arrayLike);
-}
-
-@JS('open')
-external dynamic open(String url, [String? windowName, String? windowFeatures]);
 
 void printBlob(
   Uint8List byteList, [
   String? mimeType,
+  String? fileName,
 ]) {
-  Array byteArray = Array();
-
-  for (int b in byteList) {
-    callMethod(byteArray, 'push', [b]);
+  var byteArray = createArray();
+  for (var b in byteList) {
+    addAllToArray(byteArray, [b]);
   }
-
-  Uint8Array bytes = Uint8Array.from(byteArray);
-  Array array = Array();
-  callMethod(array, 'push', [bytes]);
+  var bytes = createUint8ArrayFrom(byteArray);
   var options = newObject();
   if (mimeType != null) {
     setProperty(options, 'type', mimeType);
   }
 
-  final blob = Blob(array, options);
+  final blob = createBlob(createArray([bytes]), options);
 
-  open(URL.createObjectURL(blob));
+  final objectUrl = URL.createObjectURL(blob);
+
+  var args = [objectUrl];
+  if (fileName != null) args.add(fileName);
+
+  callMethod(window, 'open', args);
 }

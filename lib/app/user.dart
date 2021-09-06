@@ -317,14 +317,13 @@ class _UserFormPanelState extends State<_UserFormPanel> {
         setState(() {
           isLoggingOut = false;
         });
-        return;
+      } else {
+        await AuthorizationKey.delete();
+        await Navigator.of(context).pushNamedAndRemoveUntil(
+          '/login',
+          (route) => false,
+        );
       }
-
-      await AuthorizationKey.delete();
-      await Navigator.of(context).pushNamedAndRemoveUntil(
-        '/login',
-        (route) => false,
-      );
     }
   }
 

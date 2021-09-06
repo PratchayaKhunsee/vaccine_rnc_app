@@ -23,7 +23,7 @@ class _CombinedImagePickerValue {
   Uint8List? imagePicker;
   _CombinedImagePickerMode mode = _CombinedImagePickerMode.drawingPad;
 
-  void set value(Uint8List? v) {
+  set value(Uint8List? v) {
     switch (mode) {
       case _CombinedImagePickerMode.cameraCapturer:
         cameraCapturer = v;

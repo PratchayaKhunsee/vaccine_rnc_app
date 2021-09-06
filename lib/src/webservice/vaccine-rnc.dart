@@ -385,8 +385,6 @@ class CompletedVaccineCertificationResult {
           break;
       }
     }
-
-    ;
   }
 }
 
@@ -489,9 +487,7 @@ abstract class VaccineRNCDatabaseWS {
     return c;
   }
 
-  /**
-   * Get the HTTP header.
-   */
+  /// Get the HTTP header.
   static String? _getHeader(Map<String, String> headers, String name) {
     for (MapEntry<String, String> e in headers.entries) {
       String matchCase = name.split('').map((e) {
@@ -641,7 +637,7 @@ abstract class VaccineRNCDatabaseWS {
 
       return converted!['authorization'];
     } catch (e) {
-      // debugPrint('$e');
+      print('$e');
       throw _determineError(e);
     }
   }

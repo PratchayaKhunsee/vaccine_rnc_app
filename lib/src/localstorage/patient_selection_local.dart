@@ -61,9 +61,9 @@ class PatientSelectionLocal {
     SharedPreferences? pref = await _getInstance();
     if (pref == null) return null;
     String _section = _determineSection(section);
-    int? id = await pref.getInt('$_section/id');
-    String? firstName = await pref.getString('$_section/firstname');
-    String? lastName = await pref.getString('$_section/lastname');
+    int? id = pref.getInt('$_section/id');
+    String? firstName = pref.getString('$_section/firstname');
+    String? lastName = pref.getString('$_section/lastname');
     if (id == null || firstName == null || lastName == null) return null;
     return PatientInfo(
       id: id,

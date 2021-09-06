@@ -27,7 +27,7 @@ class SimpleLayout extends StatelessWidget {
   Widget build(BuildContext context) {
     List<Widget> builtWidgets = <Widget>[];
     Iterator<Line> li = lines!.iterator;
-    Line? previousLine = null;
+    Line? previousLine;
     while (li.moveNext()) {
       Line currentLine = li.current;
       builtWidgets.add(Container(
@@ -84,7 +84,7 @@ class Line extends StatelessWidget {
 
     List<Widget> builtWidgets = <Widget>[];
     Iterator<Item> it = items!.iterator;
-    Item? previousItem = null;
+    Item? previousItem;
     while (it.moveNext()) {
       Item currentItem = it.current;
       builtWidgets.add(Container(

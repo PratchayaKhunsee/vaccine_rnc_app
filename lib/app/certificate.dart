@@ -10,10 +10,8 @@ import 'package:provider/provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as PdfWidget;
 import 'package:printing/printing.dart';
-import 'package:vaccine_rnc_app/src/js/js.dart';
 
-// import 'package:vaccine_rnc_app/app/modules.dart';
-
+import '../src/js/js.dart';
 import '../src/webservice/vaccine-rnc.dart';
 
 import '_import.dart';
@@ -639,8 +637,12 @@ class _CertificateBody extends StatelessWidget {
 
     Uint8List pdfBytes = await pdf.save();
     if (kIsWeb) {
-      printBlob(pdfBytes, 'application/pdf',
-          'certificate_of_vaccination_' + DateTime.now().toString());
+      try {
+        printBlob(pdfBytes, 'application/pdf',
+            'certificate_of_vaccination_' + DateTime.now().toString());
+      } catch (err) {
+        print(err);
+      }
     } else {
       await Printing.layoutPdf(
         name: 'certificate_of_vaccination_' + DateTime.now().toString(),
@@ -735,6 +737,7 @@ class _CertificateBody extends StatelessWidget {
 
         await printAsPDF(c);
       } catch (err) {
+        // print(err);
         // debugPrint('$err');
         printButtonDisabled.value = false;
       } finally {

@@ -1,11 +1,11 @@
 {
-    "name": "app",
-    "short_name": "app",
+    "name": "แอปพลิเคชันบันทึกและออกใบรับรองการรับวัคซีน",
+    "short_name": "vaccine-rnc",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "แอปพลิเคชันนี้เกิดขึ้นจากวิทยานิพนธ์โครงงานการศึกษาการพัฒนาแอปพลิเคชันบันทึกและออกใบรับรองการรับวัคซีน",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

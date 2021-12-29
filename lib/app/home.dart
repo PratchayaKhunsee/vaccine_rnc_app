@@ -35,7 +35,7 @@ class Home extends StatelessWidget {
           ),
           ListTile(
             leading: Icon(Icons.people_sharp),
-            title: Text('ดูแลรายชื่อ'),
+            title: Text('รายชื่อผูกบันทึก/ใบรับรอง'),
             onTap: () {
               _route(context, '/parenting');
             },

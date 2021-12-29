@@ -37,9 +37,11 @@ class BulletItemList extends StatelessWidget {
                       ),
                       child: _bullet,
                     ),
-                    Container(
-                      margin: EdgeInsets.only(left: 3),
-                      child: e,
+                    Flexible(
+                      child: Container(
+                        margin: EdgeInsets.only(left: 3),
+                        child: e,
+                      ),
                     ),
                   ],
                 ),

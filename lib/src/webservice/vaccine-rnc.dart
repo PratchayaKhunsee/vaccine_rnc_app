@@ -132,16 +132,15 @@ class BriefyVaccineCertificationResult {
   BriefyVaccineCertificationResult(List<FormDataField> entries) {
     for (var e in entries) {
       var value = e.tryJsonDecodeValue();
-
       switch (e.name) {
         case 'fullname_in_cert':
-          fullName = value;
+          fullName = value == null ? null : value.toString();
           break;
         case 'nationality':
-          nationality = value;
+          nationality = value == null ? null : value.toString();
           break;
         case 'against_description':
-          againstDescription = value;
+          againstDescription = value == null ? null : value.toString();
           break;
         case 'sex':
           sex = value;
@@ -150,25 +149,21 @@ class BriefyVaccineCertificationResult {
           dateOfBirth = value is String ? DateTime.tryParse(value) : null;
           break;
         case 'signature':
-          if (value is String) {
-            signature = Uint8List.fromList(utf8.encode(value));
-            break;
-          }
           if (e is FileField) {
-            signature = value as Uint8List;
+            signature = e.value;
             break;
           }
 
-          signature = null;
+          signature = value;
 
           break;
         case 'certificate_list':
           try {
-            List li = json.decode(utf8.decode(value, allowMalformed: true));
-
             List<BreifyCertification> c = [];
 
-            for (var v in li) {
+            List<dynamic> list = json.decode(utf8.decode(e.value));
+
+            for (var v in list) {
               if (v is Map<String, dynamic>) {
                 c.add(BreifyCertification(
                   id: v['id'],
@@ -737,6 +732,7 @@ abstract class VaccineRNCDatabaseWS {
 
       return UserInfoResult(converted);
     } catch (e) {
+      debugPrint(e.toString());
       throw _determineError(e);
     }
   }
@@ -1096,6 +1092,7 @@ abstract class VaccineRNCDatabaseWS {
 
       return BriefyVaccineCertificationResult(converted);
     } catch (e) {
+      debugPrint("$e");
       throw _determineError(e);
     }
   }
@@ -1350,6 +1347,7 @@ abstract class VaccineRNCDatabaseWS {
       if (response.status != 200) throw response.status;
 
       var contentType = _getHeader(response.headers, 'Content-Type');
+
       if (contentType == null ||
           !contentType.contains(RegExp("^multipart\/form-data"))) {
         if (contentType?.contains(RegExp("^application\/json")) ?? true) {
@@ -1374,21 +1372,22 @@ abstract class VaccineRNCDatabaseWS {
 
       for (var e in converted) {
         var value = e.tryJsonDecodeValue();
+
         switch (e.name) {
           case 'id':
             id = value;
             break;
           case 'vaccine_against':
-            vaccineAgainst = value;
+            vaccineAgainst = value == null ? null : value.toString();
             break;
           case 'vaccine_name':
-            vaccineName = value;
+            vaccineName = value == null ? null : value.toString();
             break;
           case 'vaccine_manufacturer':
-            vaccineManufacturer = value;
+            vaccineManufacturer = value == null ? null : value.toString();
             break;
           case 'vaccine_batch_number':
-            vaccineBatchNumber = value;
+            vaccineBatchNumber = value == null ? null : value.toString();
             break;
           case 'certify_from':
             certifyFrom = DateTime.tryParse(value ?? '');
@@ -1397,32 +1396,24 @@ abstract class VaccineRNCDatabaseWS {
             certifyTo = DateTime.tryParse(value ?? '');
             break;
           case 'clinician_prof_status':
-            clinicianProfStatus = value;
+            clinicianProfStatus = value == null ? null : value.toString();
             break;
           case 'clinician_signature':
-            if (value is String) {
-              clinicianSignature = Uint8List.fromList(utf8.encode(value));
-              break;
-            }
             if (e is FileField) {
-              clinicianSignature = value as Uint8List;
+              clinicianSignature = e.value;
               break;
             }
 
-            clinicianSignature = null;
+            clinicianSignature = value;
 
             break;
           case 'administring_centre_stamp':
-            if (value is String) {
-              administringCentreStamp = Uint8List.fromList(utf8.encode(value));
-              break;
-            }
             if (e is FileField) {
-              administringCentreStamp = value as Uint8List;
+              administringCentreStamp = e.value;
               break;
             }
 
-            administringCentreStamp = null;
+            administringCentreStamp = value;
 
             break;
         }
@@ -1441,6 +1432,7 @@ abstract class VaccineRNCDatabaseWS {
         administringCentreStamp: administringCentreStamp,
       ));
     } catch (e) {
+      debugPrint("$e");
       throw _determineError(e);
     }
   }

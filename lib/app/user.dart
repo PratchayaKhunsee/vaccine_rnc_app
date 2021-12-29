@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 
 import '_import.dart';
@@ -153,6 +152,7 @@ class _UserFormPanelState extends State<_UserFormPanel> {
       infos.gender = result.gender;
       username = result.username;
     } catch (e) {
+      debugPrint(e.toString());
       if (e is NoAuthenticationKeyError) {
         await Navigator.pushNamedAndRemoveUntil(
           context,

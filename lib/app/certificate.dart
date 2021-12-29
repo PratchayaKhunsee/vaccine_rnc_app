@@ -2,9 +2,6 @@ import 'dart:typed_data';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/painting.dart';
-import 'package:flutter/rendering.dart';
-import 'package:flutter/widgets.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:pdf/pdf.dart';
@@ -12,7 +9,6 @@ import 'package:pdf/widgets.dart' as PdfWidget;
 import 'package:printing/printing.dart';
 
 import '../src/js/js.dart';
-import '../src/webservice/vaccine-rnc.dart';
 
 import '_import.dart';
 import '_widgets.dart';
@@ -661,6 +657,7 @@ class _CertificateBody extends StatelessWidget {
     BooleanNotifier printButtonDisabled = BooleanNotifier(false);
     ValueNotifier<int> signatureId = ValueNotifier(0);
 
+    /// The callback when pressing "SAVE" button.
     void onSaveButtonPressed(BuildContext context) async {
       saveButtonDisabled.value =
           formsDisabled.value = printButtonDisabled.value = true;
@@ -724,6 +721,7 @@ class _CertificateBody extends StatelessWidget {
       }
     }
 
+    /// The callback when pressing "PRINT" button.
     void onPrintButtonPressed() async {
       bool isSaveButtonDisabled = saveButtonDisabled.value;
       bool isFormsDisabled = formsDisabled.value;
@@ -747,6 +745,7 @@ class _CertificateBody extends StatelessWidget {
       }
     }
 
+    /// The callback when pressing "ADD CERTIFICATION" button.
     void onAddCertificationButtonPressed() async {
       BooleanNotifier requesting = BooleanNotifier(true);
       List<String>? availableVaccineAgainst;
@@ -917,7 +916,9 @@ class _CertificateBody extends StatelessWidget {
       return isExpanded ? Expanded(child: c) : c;
     }
 
+    /// This build the entire certificate's forms, including buttons.
     Widget buildVacCertificatePanel() {
+      /// This build the certificate's form.
       SingleChildScrollView createBody() {
         void signatureImageSelection() async {
           Uint8List? imageBytes =
@@ -1031,8 +1032,11 @@ class _CertificateBody extends StatelessWidget {
                 builder: (context, _) => Consumer<ValueNotifier<int>>(
                   builder: (context, v, _) => Center(
                     child: cert!.signature != null
-                        ? Image.memory(cert!.signature as Uint8List)
-                        : null,
+                        ? Image.memory(cert!.signature!)
+                        : Container(
+                            height: 32,
+                            color: Color(0x0d000000),
+                          ),
                   ),
                 ),
               ),
@@ -1074,6 +1078,7 @@ class _CertificateBody extends StatelessWidget {
                 setState(() {
                   requesting = true;
                 });
+
                 try {
                   CertificationResult result =
                       await VaccineRNCDatabaseWS.viewEachCertification(
@@ -1092,6 +1097,7 @@ class _CertificateBody extends StatelessWidget {
 
                   retrieved = true;
                 } catch (e) {
+                  debugPrint("$e");
                 } finally {
                   setState(() {
                     requesting = false;
@@ -1237,8 +1243,7 @@ class _CertificateBody extends StatelessWidget {
                         builder: (context, _) => Consumer<ValueNotifier<int>>(
                           builder: (context, v, _) => Center(
                             child: c.clinicianSignature != null
-                                ? Image.memory(
-                                    c.clinicianSignature as Uint8List)
+                                ? Image.memory(c.clinicianSignature!)
                                 : Text(
                                     'ลายเซ็น',
                                     style: TextStyle(
@@ -1286,8 +1291,7 @@ class _CertificateBody extends StatelessWidget {
                         builder: (context, _) => Consumer<ValueNotifier<int>>(
                           builder: (context, v, _) => Center(
                             child: c.administringCentreStamp != null
-                                ? Image.memory(
-                                    c.administringCentreStamp as Uint8List)
+                                ? Image.memory(c.administringCentreStamp!)
                                 : Text(
                                     'ตราประทับ',
                                     style: TextStyle(
@@ -1486,12 +1490,13 @@ class _CertificateBody extends StatelessWidget {
                         ),
                       ),
                       Line(
-                        child: Row(
+                        child: Wrap(
+                          crossAxisAlignment: WrapCrossAlignment.center,
                           children: [
                             Text('เพศ'),
                             afterFirst(sex),
                             afterFirst(Text('วันเดือนปีเกิด')),
-                            afterFirst(dateOfBirth, true),
+                            afterFirst(dateOfBirth),
                           ],
                         ),
                       ),
@@ -1558,6 +1563,7 @@ class _CertificateBody extends StatelessWidget {
         );
       }
 
+      /// This build the "SAVE" button and the "PRINT" button.
       Column createButtons() {
         ChangeNotifierProvider<BooleanNotifier> saveButton =
             ChangeNotifierProvider.value(
@@ -1624,6 +1630,7 @@ class _CertificateBody extends StatelessWidget {
               VaccineRNCDatabaseWS.viewCertificate(
                 patientId: currentPatient!.id,
               ).then((v) {
+                // debugPrint('${v.certificateList}');
                 cert = _Certificate(
                   fullName: v.fullName,
                   nationality: v.nationality,

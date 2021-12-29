@@ -1,6 +1,4 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:provider/provider.dart';
 
 import '_import.dart';
@@ -623,7 +621,7 @@ class Parenting extends StatelessWidget {
   Widget build(BuildContext context) {
     return MessageNotification.scaffold(
       appBar: AppBar(
-        title: Text('ดูแลรายชื่อ'),
+        title: Text('รายชื่อผูกบันทึก/ใบรับรอง'),
       ),
       body: _PatientBody(),
     );
